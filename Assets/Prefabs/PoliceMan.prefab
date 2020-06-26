@@ -91,10 +91,15 @@ PrefabInstance:
       propertyPath: m_Name
       value: Policeman
       objectReference: {fileID: 0}
+    - target: {fileID: 1113337458372151200, guid: 73e1432563d8c1a48839445fb70ed3d9,
+        type: 3}
+      propertyPath: possibleTargets.Array.size
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 8602854757133437893, guid: 73e1432563d8c1a48839445fb70ed3d9,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 1.02
       objectReference: {fileID: 0}
     - target: {fileID: 8602854757133437893, guid: 73e1432563d8c1a48839445fb70ed3d9,
         type: 3}
@@ -104,7 +109,7 @@ PrefabInstance:
     - target: {fileID: 8602854757133437893, guid: 73e1432563d8c1a48839445fb70ed3d9,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 0.69
       objectReference: {fileID: 0}
     - target: {fileID: 8602854757133437893, guid: 73e1432563d8c1a48839445fb70ed3d9,
         type: 3}

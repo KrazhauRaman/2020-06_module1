@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditorInternal;
 using UnityEngine;
 
 public class CharacterAnimationEvents : MonoBehaviour
@@ -13,12 +14,14 @@ public class CharacterAnimationEvents : MonoBehaviour
     }
 
     void AttackEnd()
-    {
-        character.SetState(Character.State.RunningFromEnemy);
+    {        
+        character.CurrentState = Character.State.RunningFromEnemy;
+        character.KillTarget();
     }
 
     void ShootEnd()
     {
-        character.SetState(Character.State.Idle);
+        character.CurrentState = Character.State.Idle;
+        character.KillTarget();
     }
 }

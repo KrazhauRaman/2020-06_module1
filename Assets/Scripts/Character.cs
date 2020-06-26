@@ -11,51 +11,71 @@ public class Character : MonoBehaviour
         RunningFromEnemy,
         BeginAttack,
         Attack,
+        TurningToEnemy,
         BeginShoot,
         Shoot,
+        Dying,
+        Dead
     }
 
     public enum Weapon
     {
         Pistol,
         Bat,
+        Fist
     }
 
     public Weapon weapon;
     public float runSpeed;
     public float distanceFromEnemy;
-    public Transform target;
-    State state;
+    public GameObject[] possibleTargets;
+    
+    public State CurrentState { get; set; }
     Animator animator;
     Vector3 originalPosition;
     Quaternion originalRotation;
+    bool isAlive;
+    GameObject target;
+
 
     // Start is called before the first frame update
     void Start()
     {
         animator = GetComponentInChildren<Animator>();
-        state = State.Idle;
+        CurrentState = State.Idle;
         originalPosition = transform.position;
         originalRotation = transform.rotation;
-    }
-
-    public void SetState(State newState)
-    {
-        state = newState;
+        isAlive = true;
+        target = possibleTargets[0];
     }
 
     [ContextMenu("Attack")]
     void AttackEnemy()
     {
-        switch (weapon) {
-            case Weapon.Bat:
-                state = State.RunningToEnemy;
-                break;
+        bool isTargetAlive = target.GetComponent<Character>().isAlive;
 
-            case Weapon.Pistol:
-                state = State.BeginShoot;
-                break;
+        if (!isTargetAlive)
+        {
+            target = possibleTargets[1];
+            isTargetAlive = target.GetComponent<Character>().isAlive;
         }
+            
+       
+        if (isTargetAlive && isAlive)
+        {
+            switch (weapon)
+            {
+                case Weapon.Bat:
+                case Weapon.Fist:
+                    CurrentState = State.RunningToEnemy;
+                    break;
+
+                case Weapon.Pistol:
+                    CurrentState = State.TurningToEnemy;
+                    break;
+            }
+        }
+        
     }
 
     bool RunTowards(Vector3 targetPosition, float distanceFromTarget)
@@ -82,31 +102,59 @@ public class Character : MonoBehaviour
         return true;
     }
 
+    void TurnTo(Vector3 targetPosition)
+    {
+        Vector3 distance = targetPosition - transform.position;
+        Vector3 direction = distance.normalized;
+        transform.rotation = Quaternion.LookRotation(direction);
+    }
+
+    public void KillTarget()
+    {
+        target.GetComponent<Character>().Die();
+    }
+
+    public void Die()
+    {
+        animator.SetFloat("Speed", 0.0f);
+        CurrentState = State.Dying;
+        isAlive = false;
+    }
     void FixedUpdate()
     {
-        switch (state) {
+        switch (CurrentState) {
             case State.Idle:
-                animator.SetFloat("Speed", 0.0f);
-                transform.rotation = originalRotation;
+
+                if (weapon != Weapon.Pistol)
+                {
+                    animator.SetFloat("Speed", 0.0f);
+                    transform.rotation = originalRotation;
+
+                }
                 break;
 
             case State.RunningToEnemy:
                 animator.SetFloat("Speed", runSpeed);
-                if (RunTowards(target.position, distanceFromEnemy))
-                    state = State.BeginAttack;
+                if (RunTowards(target.transform.position, distanceFromEnemy))
+                    CurrentState = State.BeginAttack;
                 break;
 
             case State.BeginAttack:
                 animator.SetTrigger("MeleeAttack");
-                state = State.Attack;
+                CurrentState = State.Attack;
                 break;
 
             case State.Attack:
                 break;
 
+            case State.TurningToEnemy:
+                TurnTo(target.transform.position);
+                CurrentState = State.BeginShoot;
+                break;
+
             case State.BeginShoot:
                 animator.SetTrigger("Shoot");
-                state = State.Shoot;
+                CurrentState = State.Shoot;
                 break;
 
             case State.Shoot:
@@ -115,8 +163,17 @@ public class Character : MonoBehaviour
             case State.RunningFromEnemy:
                 animator.SetFloat("Speed", runSpeed);
                 if (RunTowards(originalPosition, 0.0f))
-                    state = State.Idle;
+                    CurrentState = State.Idle;
                 break;
+
+            case State.Dying:
+                animator.SetTrigger("Death");
+                CurrentState = State.Dead;
+                break;
+
+            case State.Dead:                
+                break;
+
         }
     }
 }
